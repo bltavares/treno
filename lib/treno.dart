@@ -43,7 +43,7 @@ final void Function(ffi.Pointer, int) _configFlushEveryMs = _sledNative
     .asFunction();
 
 class Config {
-  final ffi.Pointer _configPointer = _createConfig();
+  ffi.Pointer _configPointer = _createConfig();
 
   Config(
     String path, {
@@ -61,8 +61,16 @@ class Config {
     _configFlushEveryMs(this._configPointer, flushEveryMs);
   }
 
+  ffi.Pointer consume() {
+    var pointer = this._configPointer;
+    this._configPointer = null;
+    return pointer;
+  }
+
   void dispose() {
-    _freeConfig(this._configPointer);
+    if (this._configPointer != null) {
+      _freeConfig(this._configPointer);
+    }
   }
 }
 
@@ -79,7 +87,7 @@ class Db {
   ffi.Pointer _dbPointer;
 
   Db(Config config) {
-    this._dbPointer = _openDb(config._configPointer);
+    this._dbPointer = _openDb(config.consume());
   }
 
   void dispose() {
