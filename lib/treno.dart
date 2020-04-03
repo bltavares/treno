@@ -139,41 +139,20 @@ class Db {
     );
   }
 
-  SledBuffer getKey(String key) {
+  String getKey(String key) {
     var valueSize = allocate<ffi.Uint64>();
-    return SledBuffer._(_get(
+    var valueFfi = _get(
       this._dbPointer,
       Utf8.toUtf8(key),
       key.length,
       valueSize,
-    ));
+    );
+    var value = Utf8.fromUtf8(valueFfi);
+    _freeBuffer(valueFfi);
+    return value;
   }
 
   void dispose() {
     _closeDb(this._dbPointer);
-  }
-}
-
-class SledBuffer {
-  ffi.Pointer<Utf8> bufferPointer;
-  String string;
-
-  SledBuffer._(ffi.Pointer<Utf8> buffer) {
-    this.bufferPointer = buffer;
-    this.string = Utf8.fromUtf8(buffer);
-  }
-
-  String toString() {
-    return this.string;
-  }
-
-  // Missing finalizers in Dart for FFI
-  // https://github.com/dart-lang/sdk/issues/35770
-  void dispose() {
-    if (this.bufferPointer != null) {
-      _freeBuffer(this.bufferPointer);
-      this.bufferPointer = null;
-      this.string = null;
-    }
   }
 }
