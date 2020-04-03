@@ -83,6 +83,45 @@ final void Function(ffi.Pointer) _closeDb = _sledNative
     .lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer)>>("sled_close")
     .asFunction();
 
+final void Function(
+  ffi.Pointer, // Db
+  ffi.Pointer<Utf8>, // Key value
+  int, // Key len
+  ffi.Pointer<Utf8>, // Value value
+  int, // Value len
+) _set = _sledNative
+    .lookup<
+        ffi.NativeFunction<
+            ffi.Void Function(
+      ffi.Pointer, // Db
+      ffi.Pointer<Utf8>, // Key value
+      ffi.Uint64, // Key len
+      ffi.Pointer<Utf8>, // Value value
+      ffi.Uint64, // Value len
+    )>>("sled_set")
+    .asFunction();
+
+final ffi.Pointer<Utf8> Function(
+  ffi.Pointer,
+  ffi.Pointer<Utf8>,
+  int,
+  ffi.Pointer<ffi.Uint64>,
+) _get = _sledNative
+    .lookup<
+        ffi.NativeFunction<
+            ffi.Pointer<Utf8> Function(
+      ffi.Pointer,
+      ffi.Pointer<Utf8>,
+      ffi.Uint64,
+      ffi.Pointer<ffi.Uint64>,
+    )>>("sled_get")
+    .asFunction();
+
+final void Function(ffi.Pointer<Utf8>) _freeBuffer = _sledNative
+    .lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Utf8>)>>(
+        "sled_free_buf")
+    .asFunction();
+
 class Db {
   ffi.Pointer _dbPointer;
 
@@ -90,7 +129,51 @@ class Db {
     this._dbPointer = _openDb(config._consume());
   }
 
+  void setKey(String key, String value) {
+    _set(
+      this._dbPointer,
+      Utf8.toUtf8(key),
+      key.length,
+      Utf8.toUtf8(value),
+      value.length,
+    );
+  }
+
+  SledBuffer getKey(String key) {
+    var valueSize = allocate<ffi.Uint64>();
+    return SledBuffer._(_get(
+      this._dbPointer,
+      Utf8.toUtf8(key),
+      key.length,
+      valueSize,
+    ));
+  }
+
   void dispose() {
     _closeDb(this._dbPointer);
+  }
+}
+
+class SledBuffer {
+  ffi.Pointer<Utf8> bufferPointer;
+  String string;
+
+  SledBuffer._(ffi.Pointer<Utf8> buffer) {
+    this.bufferPointer = buffer;
+    this.string = Utf8.fromUtf8(buffer);
+  }
+
+  String toString() {
+    return this.string;
+  }
+
+  // Missing finalizers in Dart for FFI
+  // https://github.com/dart-lang/sdk/issues/35770
+  void dispose() {
+    if (this.bufferPointer != null) {
+      _freeBuffer(this.bufferPointer);
+      this.bufferPointer = null;
+      this.string = null;
+    }
   }
 }
