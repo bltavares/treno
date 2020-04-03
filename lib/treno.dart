@@ -61,7 +61,7 @@ class Config {
     _configFlushEveryMs(this._configPointer, flushEveryMs);
   }
 
-  ffi.Pointer consume() {
+  ffi.Pointer _consume() {
     var pointer = this._configPointer;
     this._configPointer = null;
     return pointer;
@@ -87,7 +87,7 @@ class Db {
   ffi.Pointer _dbPointer;
 
   Db(Config config) {
-    this._dbPointer = _openDb(config.consume());
+    this._dbPointer = _openDb(config._consume());
   }
 
   void dispose() {
