@@ -141,6 +141,8 @@ class Db {
 
   String getKey(String key) {
     var valueSize = allocate<ffi.Uint64>();
+    // Double alloc, but avoids leak while finalizers are not ready
+    // https://github.com/dart-lang/sdk/issues/35770
     var valueFfi = _get(
       this._dbPointer,
       Utf8.toUtf8(key),
