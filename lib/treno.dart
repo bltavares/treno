@@ -19,42 +19,41 @@ final _configSetPath = _sledNative.lookupFunction<
         ffi.Pointer, ffi.Pointer<Utf8>)>("sled_config_set_path");
 
 final _configSetReadOnly = _sledNative.lookupFunction<
-    ffi.Void Function(ffi.Pointer, ffi.Uint8),
-    void Function(ffi.Pointer, int)>("sled_config_read_only");
+    ffi.Pointer Function(ffi.Pointer, ffi.Uint8),
+    ffi.Pointer Function(ffi.Pointer, int)>("sled_config_read_only");
 
 final _configSetCacheCapacity = _sledNative.lookupFunction<
-    ffi.Void Function(ffi.Pointer, ffi.Uint32),
-    void Function(ffi.Pointer, int)>("sled_config_set_cache_capacity");
+    ffi.Pointer Function(ffi.Pointer, ffi.Uint32),
+    ffi.Pointer Function(ffi.Pointer, int)>("sled_config_set_cache_capacity");
 
 final _configUseCompression = _sledNative.lookupFunction<
-    ffi.Void Function(ffi.Pointer, ffi.Uint8),
-    void Function(ffi.Pointer, int)>("sled_config_use_compression");
+    ffi.Pointer Function(ffi.Pointer, ffi.Uint8),
+    ffi.Pointer Function(ffi.Pointer, int)>("sled_config_use_compression");
 
 final _configFlushEveryMs = _sledNative.lookupFunction<
-    ffi.Void Function(ffi.Pointer, ffi.Uint64),
-    void Function(ffi.Pointer, int)>("sled_config_flush_every_ms");
+    ffi.Pointer Function(ffi.Pointer, ffi.Uint64),
+    ffi.Pointer Function(ffi.Pointer, int)>("sled_config_flush_every_ms");
 
 class Config {
   ffi.Pointer _configPointer = _createConfig();
 
   Config(
     String path, {
-    // TODO: Figure out the defaults
-    // bool readOnly = false,
-    // int cacheCapacity = 200,
-    // int flushEveryMs = 1000,
+    bool readOnly = false,
+    int cacheCapacity = 1024 * 1024 * 1024, // 1gb,
+    int flushEveryMs = 500,
 
     /// The compression feature must be enabled on the lib
     bool useCompression = false,
   }) {
     this._configPointer =
         _configSetPath(this._configPointer, Utf8.toUtf8(path));
-    // _configSetReadOnly(this._configPointer, readOnly ? 1 : 0);
-    // if (cacheCapacity != 0) {
-    //   _configSetCacheCapacity(this._configPointer, cacheCapacity);
-    // }
-    // _configUseCompression(this._configPointer, useCompression ? 1 : 0);
-    // _configFlushEveryMs(this._configPointer, flushEveryMs);
+    _configSetReadOnly(this._configPointer, readOnly ? 1 : 0);
+    if (cacheCapacity != 0) {
+      _configSetCacheCapacity(this._configPointer, cacheCapacity);
+    }
+    _configUseCompression(this._configPointer, useCompression ? 1 : 0);
+    _configFlushEveryMs(this._configPointer, flushEveryMs);
   }
 
   ffi.Pointer _consume() {
