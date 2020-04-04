@@ -48,12 +48,16 @@ class Config {
   }) {
     this._configPointer =
         _configSetPath(this._configPointer, Utf8.toUtf8(path));
-    _configSetReadOnly(this._configPointer, readOnly ? 1 : 0);
+    this._configPointer =
+        _configSetReadOnly(this._configPointer, readOnly ? 1 : 0);
     if (cacheCapacity != 0) {
-      _configSetCacheCapacity(this._configPointer, cacheCapacity);
+      this._configPointer =
+          _configSetCacheCapacity(this._configPointer, cacheCapacity);
     }
-    _configUseCompression(this._configPointer, useCompression ? 1 : 0);
-    _configFlushEveryMs(this._configPointer, flushEveryMs);
+    this._configPointer =
+        _configUseCompression(this._configPointer, useCompression ? 1 : 0);
+    this._configPointer =
+        _configFlushEveryMs(this._configPointer, flushEveryMs);
   }
 
   ffi.Pointer _consume() {
