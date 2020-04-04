@@ -1,5 +1,7 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:convert';
 import 'package:ffi/ffi.dart';
 
 final ffi.DynamicLibrary _sledNative = Platform.isAndroid
@@ -134,6 +136,12 @@ class Db {
     );
   }
 
+  /// Copy from Utf8.fromUtf8 with splicit length
+  static fromUtf8Length(ffi.Pointer<Utf8> string, int length) {
+    return utf8.decode(Uint8List.view(
+        string.cast<ffi.Uint8>().asTypedList(length).buffer, 0, length));
+  }
+
   String getKey(String key) {
     var valueSize = allocate<ffi.Uint64>();
     // Double alloc, but avoids leak while finalizers are not ready
@@ -144,7 +152,8 @@ class Db {
       key.length,
       valueSize,
     );
-    var value = Utf8.fromUtf8(valueFfi);
+    var length = valueSize.value;
+    var value = fromUtf8Length(valueFfi, length);
     _freeBuffer(valueFfi);
     return value;
   }
