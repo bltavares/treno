@@ -27,8 +27,8 @@ class MyApp extends StatelessWidget {
                   var db = treno.Db(config);
                   db.setKey("banana", "banana");
                   var response = db.getKey("banana");
-                  // Scaffold.of(context).showSnackBar(
-                  //     SnackBar(content: Text("Response $response")));
+                  Scaffold.of(context).showSnackBar(
+                      SnackBar(content: Text("Response $response")));
                   db.dispose();
                 },
               ),
